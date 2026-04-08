@@ -330,7 +330,7 @@ local Library do
                 return
             end
 
-            self:Pause()
+            Tween:Pause()
             self = nil
         end
     end
@@ -703,9 +703,8 @@ local Library do
         Parent = Library.Holder.Instance,
         Name = "\0",
         Text = "",
-        BackgroundTransparency = 1,
-        TextTransparency = 1,
-        Size = UDim2New(0, 0, 0, 0),
+        BackgroundTransparency = 0,
+        TextTransparency = 0,
         Visible = true,
         Modal = true
     })
@@ -804,8 +803,7 @@ local Library do
     end
 
     Library.Connect = function(self, Event, Callback, Name)
-        self.UnnamedConnections = self.UnnamedConnections + 1
-        Name = Name or StringFormat("Connection%s%s", self.UnnamedConnections, HttpService:GenerateGUID(false))
+        Name = Name or StringFormat("Connection%s%s", self.UnnamedConnections + 1, HttpService:GenerateGUID(false))
 
         local NewConnection = {
             Event = Event,
@@ -832,13 +830,12 @@ local Library do
     end
 
     Library.NextFlag = function(self)
-        self.UnnamedFlags = self.UnnamedFlags + 1
-        local FlagNumber = self.UnnamedFlags
+        local FlagNumber = self.UnnamedFlags + 1
         return StringFormat("flag_number_%s_%s", FlagNumber, HttpService:GenerateGUID(false))
     end
 
     Library.AddToTheme = function(self, Item, Properties)
-        Item = (type(Item) == "table" and Item.Instance) or Item 
+        Item = Item.Instance or Item 
 
         local ThemeData = {
             Item = Item,
@@ -928,7 +925,7 @@ local Library do
             List[Index] = FileName
         end
 
-        local IsNew = #List ~= #CurrentList
+        local IsNew = #List ~= CurrentList
 
         if not IsNew then
             for Index = 1, #List do
@@ -944,7 +941,7 @@ local Library do
     end
 
     Library.ChangeItemTheme = function(self, Item, Properties)
-        Item = (type(Item) == "table" and Item.Instance) or Item
+        Item = Item.Instance or Item
 
         if not self.ThemeMap[Item] then 
             return
@@ -1527,8 +1524,7 @@ local Library do
         Components.Toggle = function(self, Data)
             local Toggle = {
                 Value = false,
-                Flag = Data.Flag,
-                HasChildren = false
+                Flag = Data.Flag
             }
             
             local Items = { } do
@@ -1607,11 +1603,7 @@ local Library do
                     AutomaticSize = Enum.AutomaticSize.X,
                     TextSize = 9,
                     BackgroundColor3 = FromRGB(255, 255, 255)
-                })  if Data.TextColor then
-                    Items["Text"].Instance.TextColor3 = Data.TextColor
-                else
-                    Items["Text"]:AddToTheme({TextColor3 = "Text"})
-                end
+                })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
 
                 Items["Text"]:TextBorder()
 
@@ -1636,32 +1628,6 @@ local Library do
                     Padding = UDimNew(0, 6),
                     SortOrder = Enum.SortOrder.LayoutOrder
                 })
-
-                Items["ChildContainer"] = Instances:Create("Frame", {
-                    Parent = Data.Parent.Instance,
-                    Name = "\0",
-                    BackgroundTransparency = 1,
-                    BorderColor3 = FromRGB(0, 0, 0),
-                    Size = UDim2New(1, 0, 0, 0),
-                    BorderSizePixel = 0,
-                    Visible = false,
-                    AutomaticSize = Enum.AutomaticSize.Y,
-                    BackgroundColor3 = FromRGB(255, 255, 255)
-                })
-
-                Instances:Create("UIListLayout", {
-                    Parent = Items["ChildContainer"].Instance,
-                    Name = "\0",
-                    Padding = UDimNew(0, 6),
-                    SortOrder = Enum.SortOrder.LayoutOrder
-                })
-
-                Instances:Create("UIPadding", {
-                    Parent = Items["ChildContainer"].Instance,
-                    Name = "\0",
-                    PaddingLeft = UDimNew(0, 22),
-                    PaddingTop = UDimNew(0, 2)
-                })
             end
             
             function Toggle:Get()
@@ -1671,10 +1637,6 @@ local Library do
             function Toggle:SetText(Text)
                 Text = tostring(Text)
                 Items["Text"].Instance.Text = Text
-            end
-
-            function Toggle:SetTextColor(Color)
-                Items["Text"].Instance.TextColor3 = Color
             end
 
             function Toggle:Set(Value)
@@ -1692,10 +1654,6 @@ local Library do
                         Items["Indicator"]:Tween(nil, {BackgroundColor3 = Library.Theme.Element})
                         task.wait(0.05)
                         Items["Check"]:Tween(TweenInfo.new(Library.Tween.Time, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {ImageTransparency = 1, Size = UDim2New(0, 0, 0, 0)})
-                    end
-
-                    if Toggle.HasChildren then
-                        Items["ChildContainer"].Instance.Visible = Toggle.Value
                     end
 
                     if Data.Callback then 
@@ -1775,7 +1733,7 @@ local Library do
                 })
             end
 
-            function Button:Add(Name, Callback, TextColor)
+            function Button:Add(Name, Callback)
                 local NewButton = { }
 
                 local SubItems = { } do
@@ -1824,17 +1782,9 @@ local Library do
                         TextSize = 9,
                         TextTruncate = Enum.TextTruncate.AtEnd,
                         BackgroundColor3 = FromRGB(255, 255, 255)
-                    })  if TextColor then
-                        SubItems["Text"].Instance.TextColor3 = TextColor
-                    else
-                        SubItems["Text"]:AddToTheme({TextColor3 = "Text"})
-                    end
+                    })  SubItems["Text"]:AddToTheme({TextColor3 = "Text"})
 
                     SubItems["Text"]:TextBorder()
-                end
-
-                function NewButton:SetTextColor(Color)
-                    SubItems["Text"].Instance.TextColor3 = Color
                 end
 
                 function NewButton:Press()
@@ -1930,60 +1880,12 @@ local Library do
                     Text = "",
                     Name = "\0",
                     AnchorPoint = Vector2New(0, 1),
-                    Position = UDim2New(0, 16, 1, 0),
+                    Position = UDim2New(0, 0, 1, 0),
                     BorderColor3 = FromRGB(12, 12, 12),
-                    Size = UDim2New(1, -32, 0, 10),
+                    Size = UDim2New(1, 0, 0, 10),
                     BorderSizePixel = 2,
                     BackgroundColor3 = FromRGB(30, 36, 31)
                 })  Items["RealSlider"]:AddToTheme({BackgroundColor3 = "Element", BorderColor3 = "Border"})
-
-                Items["MinusButton"] = Instances:Create("TextButton", {
-                    Parent = Items["Slider"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = FromRGB(235, 235, 235),
-                    Text = "-",
-                    AutoButtonColor = false,
-                    AnchorPoint = Vector2New(0, 1),
-                    Position = UDim2New(0, 0, 1, 0),
-                    Size = UDim2New(0, 14, 0, 10),
-                    BorderColor3 = FromRGB(12, 12, 12),
-                    BorderSizePixel = 2,
-                    TextSize = 9,
-                    BackgroundColor3 = FromRGB(30, 36, 31)
-                })  Items["MinusButton"]:AddToTheme({BackgroundColor3 = "Element", BorderColor3 = "Border", TextColor3 = "Text"})
-
-                Instances:Create("UIStroke", {
-                    Parent = Items["MinusButton"].Instance,
-                    Name = "\0",
-                    Color = FromRGB(42, 49, 45),
-                    LineJoinMode = Enum.LineJoinMode.Miter,
-                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                }):AddToTheme({Color = "Outline"})
-
-                Items["PlusButton"] = Instances:Create("TextButton", {
-                    Parent = Items["Slider"].Instance,
-                    Name = "\0",
-                    FontFace = Library.Font,
-                    TextColor3 = FromRGB(235, 235, 235),
-                    Text = "+",
-                    AutoButtonColor = false,
-                    AnchorPoint = Vector2New(1, 1),
-                    Position = UDim2New(1, 0, 1, 0),
-                    Size = UDim2New(0, 14, 0, 10),
-                    BorderColor3 = FromRGB(12, 12, 12),
-                    BorderSizePixel = 2,
-                    TextSize = 9,
-                    BackgroundColor3 = FromRGB(30, 36, 31)
-                })  Items["PlusButton"]:AddToTheme({BackgroundColor3 = "Element", BorderColor3 = "Border", TextColor3 = "Text"})
-
-                Instances:Create("UIStroke", {
-                    Parent = Items["PlusButton"].Instance,
-                    Name = "\0",
-                    Color = FromRGB(42, 49, 45),
-                    LineJoinMode = Enum.LineJoinMode.Miter,
-                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                }):AddToTheme({Color = "Outline"})
 
                 Instances:Create("UIGradient", {
                     Parent = Items["RealSlider"].Instance,
@@ -2108,16 +2010,6 @@ local Library do
                 Items["RealSlider"]:Tween(nil, {BackgroundColor3 = Library.Theme["Element"]})
             end)
 
-            Items["MinusButton"]:Connect("MouseButton1Down", function()
-                local Step = Data.Decimals or 1
-                Slider:Set(Slider.Value - Step)
-            end)
-
-            Items["PlusButton"]:Connect("MouseButton1Down", function()
-                local Step = Data.Decimals or 1
-                Slider:Set(Slider.Value + Step)
-            end)
-
             if Data.Default then 
                 Slider:Set(Data.Default)
             end
@@ -2159,11 +2051,7 @@ local Library do
                     AutomaticSize = Enum.AutomaticSize.X,
                     TextSize = 9,
                     BackgroundColor3 = FromRGB(255, 255, 255)
-                })  if Data.TextColor then
-                    Items["Text"].Instance.TextColor3 = Data.TextColor
-                else
-                    Items["Text"]:AddToTheme({TextColor3 = "Text"})
-                end
+                })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
 
                 Items["Text"]:TextBorder()
 
@@ -2194,10 +2082,6 @@ local Library do
                 Text = tostring(Text)
 
                 Items["Text"].Instance.Text = Text
-            end
-
-            function Label:SetTextColor(Color)
-                Items["Text"].Instance.TextColor3 = Color
             end
 
             function Label:SetVisibility(Bool)
@@ -3295,7 +3179,7 @@ local Library do
 
                                 AnimationSpeedSliderItems["Slider"].Instance.Position = UDim2New(0, 8, 0, 45)
 
-                                OldColor = Colorpicker.Alpha
+                                OldAlpha = Colorpicker.Alpha
                                 
                                 Library:Thread(function()
                                     while task.wait() do 
@@ -3623,7 +3507,7 @@ local Library do
                     local FloorHue, FloorSat, FloorVal = nil, nil, nil
 
                     Items["RGBColor"].Instance.Text = "RGB: "..RedGreenBlue
-                    Items["HSVColor"].Instance.Text = StringFormat("HSV: %.2f, %.2f, %.2f", Hue, Saturation, Value)
+                    Items["HSVColor"].Instance.Text = `HSV: %1, %1, %1`
                     Items["HEXColor"].Instance.Text = "HEX: " .. "#" .. Colorpicker.HexValue
                 end
 
@@ -3640,9 +3524,8 @@ local Library do
 
             function Colorpicker:Set(Color, Alpha)
                 if type(Color) == "table" then
-                    local tbl = Color
-                    Color = FromRGB(tbl[1], tbl[2], tbl[3])
-                    Alpha = tbl[4] or Alpha
+                    Color = FromRGB(Color[1], Color[2], Color[3])
+                    Alpha = Color[4]
                 elseif type(Color) == "string" then
                     Color = FromHex(Color)
                 end 
@@ -3865,15 +3748,16 @@ local Library do
 
             local Items = { } do
                 Items["KeyButton"] = Instances:Create("TextButton", {
-                    Parent = Data.Parent.Instance,
+                    Parent = Data.Parent.Instance.Parent,
                     Name = "\0",
                     FontFace = Library.Font,
                     TextColor3 = FromRGB(235, 235, 235),
                     TextTransparency = 0.4000000059604645,
                     Text = "MB2",
                     AutoButtonColor = false,
-                    Size = UDim2New(0, 0, 0, 12),
-                    AutomaticSize = Enum.AutomaticSize.X,
+                    AnchorPoint = Vector2New(1, 0.5),
+                    Position = UDim2New(1, -8, 0.5, 0),
+                    Size = UDim2New(0, 40, 0, 15),
                     BackgroundTransparency = 1,
                     BorderSizePixel = 0,
                     BorderColor3 = FromRGB(0, 0, 0),
@@ -5995,7 +5879,6 @@ local Library do
             Flag = Toggle.Flag,
             Default = Toggle.Default,
             Page = Toggle.Page,
-            TextColor = Data.TextColor or Data.textcolor,
             Callback = Toggle.Callback
         })
 
@@ -6052,71 +5935,6 @@ local Library do
             return NewKeybind
         end
 
-        function NewToggle:ChildToggle(Data)
-            Data = Data or {}
-            NewToggle.HasChildren = true
-            ToggleItems["ChildContainer"].Instance.Visible = NewToggle.Value
-
-            local ChildData = {
-                Window = Toggle.Window,
-                Page = Toggle.Page,
-                Section = Toggle.Section,
-                Items = { ["Content"] = ToggleItems["ChildContainer"] }
-            }
-
-            local Child, ChildItems = Components:Toggle({
-                Name = Data.Name or Data.name or "Toggle",
-                Parent = ToggleItems["ChildContainer"],
-                Flag = Data.Flag or Data.flag or Library:NextFlag(),
-                Default = Data.Default or Data.default or false,
-                Page = Toggle.Page,
-                TextColor = Data.TextColor or Data.textcolor,
-                Callback = Data.Callback or Data.callback or function() end
-            })
-
-            return Child
-        end
-
-        function NewToggle:ChildSlider(Data)
-            Data = Data or {}
-            NewToggle.HasChildren = true
-            ToggleItems["ChildContainer"].Instance.Visible = NewToggle.Value
-
-            local Child, ChildItems = Components:Slider({
-                Name = Data.Name or Data.name or "Slider",
-                Parent = ToggleItems["ChildContainer"],
-                Flag = Data.Flag or Data.flag or Library:NextFlag(),
-                Min = Data.Min or Data.min or 0,
-                Page = Toggle.Page,
-                Decimals = Data.Decimals or Data.decimals or 1,
-                Suffix = Data.Suffix or Data.suffix or "",
-                Max = Data.Max or Data.max or 100,
-                Default = Data.Default or Data.default or 0,
-                Callback = Data.Callback or Data.callback or function() end,
-            })
-
-            return Child
-        end
-
-        function NewToggle:ChildDropdown(Data)
-            Data = Data or {}
-            NewToggle.HasChildren = true
-            ToggleItems["ChildContainer"].Instance.Visible = NewToggle.Value
-
-            local Child, ChildItems = Components:Dropdown({
-                Name = Data.Name or Data.name or "Dropdown",
-                Parent = ToggleItems["ChildContainer"],
-                Flag = Data.Flag or Data.flag or Library:NextFlag(),
-                Multi = Data.Multi or Data.multi or false,
-                Items = Data.Values or Data.values or {},
-                Page = Toggle.Page,
-                Default = Data.Default or Data.default or nil,
-                Callback = Data.Callback or Data.callback or function() end,
-            })
-
-            return Child
-        end
-
         return NewToggle
     end
 
@@ -6149,7 +5967,7 @@ local Library do
             Decimals = Data.Decimals or Data.decimals or 1,
             Suffix = Data.Suffix or Data.suffix or "",
             Max = Data.Max or Data.max or 100,
-            Default = Data.Default or Data.default or 0,
+            Default = Data.Default or Data.Default or 0,
             Callback = Data.Callback or Data.callback or function() end,
         }
 
@@ -6221,13 +6039,7 @@ local Library do
         return NewDropdown 
     end
 
-    Library.Sections.Label = function(self, Name, Data)
-        Data = Data or {}
-        if type(Name) == "table" then
-            Data = Name
-            Name = Data.Name or Data.name or "Label"
-        end
-
+    Library.Sections.Label = function(self, Name)
         local Label = {
             Window = self.Window,
             Page = self.Page,
@@ -6240,7 +6052,6 @@ local Library do
             Name = Label.Name,
             Parent = Label.Section.Items["Content"],
             Page = Label.Page,
-            TextColor = Data.TextColor or Data.textcolor,
         })
 
         function NewLabel:Colorpicker(Data)
@@ -6413,7 +6224,7 @@ local Library do
             })
 
             Items["Text"] = Instances:Create("TextLabel", {
-                Parent = Items["BlankElement"].Instance,
+                Parent = Items["Label"].Instance,
                 Name = "\0",
                 FontFace = Library.Font,
                 TextColor3 = FromRGB(235, 235, 235),
@@ -6623,6 +6434,1750 @@ local Library do
         return SettingsPage
     end
 end
+
+
+    --[[ patched build overrides ]]
+    local function PatchUnwrap(Item)
+        if type(Item) == "table" and Item.Instance then
+            return Item.Instance
+        end
+
+        return Item
+    end
+
+    local function PatchNormalizeAssetId(Value)
+        if Value == nil then
+            return ""
+        end
+
+        Value = tostring(Value)
+        Value = StringGSub(Value, "rbxassetid://", "")
+        Value = StringGSub(Value, "rbxasset://", "")
+
+        return Value
+    end
+
+    local function PatchResolveColor(Value, DefaultTheme)
+        Value = Value ~= nil and Value or DefaultTheme or "Text"
+
+        if type(Value) == "string" then
+            if Library.Theme[Value] then
+                return Value
+            end
+
+            if string.sub(Value, 1, 1) == "#" then
+                local Hex = Value
+
+                return function()
+                    return FromHex(Hex)
+                end
+            end
+        elseif type(Value) == "function" then
+            return Value
+        elseif typeof(Value) == "Color3" then
+            local Color = Value
+
+            return function()
+                return Color
+            end
+        elseif type(Value) == "table" and Value.R and Value.G and Value.B then
+            local Color = Value
+
+            return function()
+                return Color
+            end
+        end
+
+        return DefaultTheme or "Text"
+    end
+
+    local function PatchApplyThemedProperty(Item, Property, Value, DefaultTheme)
+        local Instance = PatchUnwrap(Item)
+
+        if not Instance then
+            return
+        end
+
+        local Resolved = PatchResolveColor(Value, DefaultTheme)
+
+        if type(Resolved) == "string" then
+            Instance[Property] = Library.Theme[Resolved]
+        elseif type(Resolved) == "function" then
+            Instance[Property] = Resolved()
+        else
+            Instance[Property] = Resolved
+        end
+
+        if Library.ThemeMap[Instance] then
+            Library.ThemeMap[Instance].Properties[Property] = Resolved
+        end
+
+        return Resolved
+    end
+
+    local function PatchSetFrameOpen(FrameObject, Bool, Ignore)
+        if Bool then
+            for _, Value in Library.OpenFrames do
+                if Value ~= FrameObject and Value ~= Ignore and Value.SetOpen then
+                    Library:SafeCall(function()
+                        Value:SetOpen(false)
+                    end)
+                end
+            end
+
+            Library.OpenFrames[FrameObject] = FrameObject
+        else
+            Library.OpenFrames[FrameObject] = nil
+        end
+    end
+
+    local function PatchCollectElements(...)
+        local Collected = { ... }
+
+        if #Collected == 1 and type(Collected[1]) == "table" and not Collected[1].SetVisibility and not Collected[1].Instance then
+            return Collected[1]
+        end
+
+        return Collected
+    end
+
+    Library.SafeCall = function(self, Function, ...)
+        local Arguments = { ... }
+        local Success, Result = pcall(Function, TableUnpack(Arguments))
+
+        if not Success then
+            warn(Result)
+            return false, Result
+        end
+
+        return true, Result
+    end
+
+    Library.Connect = function(self, Event, Callback, Name)
+        self.UnnamedConnections += 1
+        Name = Name or StringFormat("Connection%s%s", self.UnnamedConnections, HttpService:GenerateGUID(false))
+
+        local NewConnection = {
+            Event = Event,
+            Callback = Callback,
+            Name = Name,
+            Connection = Event:Connect(Callback)
+        }
+
+        TableInsert(self.Connections, NewConnection)
+        return NewConnection
+    end
+
+    Library.Disconnect = function(self, Name)
+        for Index, Connection in self.Connections do
+            if Connection.Name == Name then
+                if Connection.Connection then
+                    Connection.Connection:Disconnect()
+                end
+
+                TableRemove(self.Connections, Index)
+                break
+            end
+        end
+    end
+
+    Library.NextFlag = function(self)
+        self.UnnamedFlags += 1
+        return StringFormat("flag_number_%s_%s", self.UnnamedFlags, HttpService:GenerateGUID(false))
+    end
+
+    Library.Unload = function(self)
+        for _, Value in self.Connections do
+            if Value.Connection then
+                Value.Connection:Disconnect()
+            end
+        end
+
+        for _, Value in self.Threads do
+            pcall(coroutine.close, Value)
+        end
+
+        if self.Holder then
+            self.Holder:Clean()
+        end
+
+        Library = nil
+        getgenv().Library = nil
+
+        UserInputService.MouseIconEnabled = true
+    end
+
+    Library.AddToTheme = function(self, Item, Properties)
+        local Instance = PatchUnwrap(Item)
+
+        if not Instance then
+            return
+        end
+
+        local ThemeData = self.ThemeMap[Instance]
+
+        if not ThemeData then
+            ThemeData = {
+                Item = Instance,
+                Properties = { }
+            }
+
+            TableInsert(self.ThemeItems, ThemeData)
+            self.ThemeMap[Instance] = ThemeData
+        end
+
+        for Property, Value in Properties do
+            ThemeData.Properties[Property] = Value
+
+            if type(Value) == "string" then
+                Instance[Property] = self.Theme[Value]
+            elseif type(Value) == "function" then
+                Instance[Property] = Value()
+            else
+                Instance[Property] = Value
+            end
+        end
+    end
+
+    Library.ChangeItemTheme = function(self, Item, Properties)
+        local Instance = PatchUnwrap(Item)
+
+        if not Instance or not self.ThemeMap[Instance] then
+            return
+        end
+
+        for Property, Value in Properties do
+            self.ThemeMap[Instance].Properties[Property] = Value
+        end
+    end
+
+    Library.ToRich = function(self, Text, Color)
+        Text = tostring(Text)
+
+        if not Color or typeof(Color) ~= "Color3" then
+            return `<font color="rgb(255, 255, 255)">{Text}</font>`
+        end
+
+        return `<font color="rgb({MathFloor(Color.R * 255)}, {MathFloor(Color.G * 255)}, {MathFloor(Color.B * 255)})">{Text}</font>`
+    end
+
+    Library.RefreshConfigsList = function(self, Element)
+        self._CurrentConfigList = self._CurrentConfigList or { }
+
+        local CurrentList = self._CurrentConfigList
+        local List = { }
+
+        for _, Value in listfiles(Library.Folders.Configs) do
+            local FileName = string.match(Value, "[^/\\]+$") or Value
+            TableInsert(List, FileName)
+        end
+
+        table.sort(List)
+
+        local IsNew = #List ~= #CurrentList
+
+        if not IsNew then
+            for Index = 1, #List do
+                if List[Index] ~= CurrentList[Index] then
+                    IsNew = true
+                    break
+                end
+            end
+        end
+
+        if IsNew then
+            self._CurrentConfigList = TableClone(List)
+
+            if Element and Element.Refresh then
+                Element:Refresh(TableClone(List))
+            end
+        end
+    end
+
+    Library.IsMouseOverFrame = function(self, Frame, XOffset, YOffset)
+        Frame = PatchUnwrap(Frame)
+        XOffset = XOffset or 0
+        YOffset = YOffset or 0
+
+        if not Frame then
+            return false
+        end
+
+        local MousePosition = Vector2New(Mouse.X + XOffset, Mouse.Y + YOffset)
+
+        return MousePosition.X >= Frame.AbsolutePosition.X and MousePosition.X <= Frame.AbsolutePosition.X + Frame.AbsoluteSize.X
+        and MousePosition.Y >= Frame.AbsolutePosition.Y and MousePosition.Y <= Frame.AbsolutePosition.Y + Frame.AbsoluteSize.Y
+    end
+
+    local OriginalWatermark = Library.Watermark
+    Library.Watermark = function(self, Name, Data)
+        Data = Data or { }
+
+        local Watermark = {
+            BaseName = tostring(Name),
+            UpdateConnection = nil,
+            LastFPS = 0,
+            _Elapsed = 0
+        }
+
+        local TextStyle = PatchResolveColor(Data.TextColor or Data.textcolor or "Text", "Text")
+
+        local Items = { } do
+            Items["Watermark"] = Instances:Create("Frame", {
+                Parent = Library.Holder.Instance,
+                Name = "\0",
+                AnchorPoint = Vector2New(0.5, 1),
+                Position = UDim2New(0.5, 0, 0, -12),
+                BorderColor3 = FromRGB(12, 12, 12),
+                BorderSizePixel = 2,
+                AutomaticSize = Enum.AutomaticSize.XY,
+                BackgroundColor3 = FromRGB(14, 17, 15),
+                ClipsDescendants = false
+            })  Items["Watermark"]:AddToTheme({BackgroundColor3 = "Background", BorderColor3 = "Border"})
+
+            if Data.Draggable ~= false then
+                Items["Watermark"]:MakeDraggable()
+            end
+
+            Instances:Create("UIStroke", {
+                Parent = Items["Watermark"].Instance,
+                Name = "\0",
+                Color = FromRGB(42, 49, 45),
+                LineJoinMode = Enum.LineJoinMode.Miter,
+                ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            }):AddToTheme({Color = "Outline"})
+
+            Instances:Create("UIPadding", {
+                Parent = Items["Watermark"].Instance,
+                Name = "\0",
+                PaddingTop = UDimNew(0, 5),
+                PaddingBottom = UDimNew(0, 7),
+                PaddingRight = UDimNew(0, 5),
+                PaddingLeft = UDimNew(0, 5)
+            })
+
+            Items["Text"] = Instances:Create("TextLabel", {
+                Parent = Items["Watermark"].Instance,
+                Name = "\0",
+                FontFace = Library.Font,
+                TextColor3 = FromRGB(235, 235, 235),
+                BorderColor3 = FromRGB(0, 0, 0),
+                Text = tostring(Name),
+                Position = UDim2New(0, 0, 0, 2),
+                BackgroundTransparency = 1,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                BorderSizePixel = 0,
+                AutomaticSize = Enum.AutomaticSize.XY,
+                TextSize = 9,
+                BackgroundColor3 = FromRGB(255, 255, 255)
+            })  Items["Text"]:AddToTheme({TextColor3 = TextStyle})
+
+            Items["Text"]:TextBorder()
+
+            Items["Liner"] = Instances:Create("Frame", {
+                Parent = Items["Watermark"].Instance,
+                Name = "\0",
+                AnchorPoint = Vector2New(0, 1),
+                Position = UDim2New(0, -5, 1, 7),
+                BorderColor3 = FromRGB(0, 0, 0),
+                Size = UDim2New(0, 20, 0, 1),
+                BorderSizePixel = 0,
+                BackgroundColor3 = FromRGB(202, 243, 255),
+                ZIndex = 10
+            })  Items["Liner"]:AddToTheme({BackgroundColor3 = "Accent"})
+
+            local LineTweenA = TweenService:Create(
+                Items["Liner"].Instance,
+                TweenInfo.new(5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
+                {Position = UDim2New(1, -15, 1, 7)}
+            )
+
+            local LineTweenB = TweenService:Create(
+                Items["Liner"].Instance,
+                TweenInfo.new(5, Enum.EasingStyle.Linear, Enum.EasingDirection.Out),
+                {Position = UDim2New(0, -5, 1, 7)}
+            )
+
+            LineTweenA.Completed:Connect(function()
+                LineTweenB:Play()
+            end)
+
+            LineTweenB.Completed:Connect(function()
+                LineTweenA:Play()
+            end)
+
+            LineTweenA:Play()
+            Watermark.Items = Items
+        end
+
+        function Watermark:SetTextColor(Value)
+            PatchApplyThemedProperty(Items["Text"], "TextColor3", Value, "Text")
+        end
+
+        function Watermark:UpdateText(DisplayOptions)
+            local TextParts = { Watermark.BaseName }
+
+            if DisplayOptions then
+                for _, Option in DisplayOptions do
+                    if Option == "UID" then
+                        TableInsert(TextParts, "UID: " .. tostring(uid))
+                    elseif Option == "FPS" then
+                        TableInsert(TextParts, "FPS: " .. tostring(Watermark.LastFPS > 0 and Watermark.LastFPS or 0))
+                    elseif Option == "Memory" then
+                        local Memory = math.floor(game:GetService("Stats"):GetTotalMemoryUsageMb())
+                        TableInsert(TextParts, "Memory: " .. tostring(Memory) .. "MB")
+                    elseif Option == "Ping" then
+                        local Ping = math.floor(LocalPlayer:GetNetworkPing() * 1000)
+                        TableInsert(TextParts, "Ping: " .. tostring(Ping) .. "ms")
+                    elseif Option == "Players" then
+                        TableInsert(TextParts, "Players: " .. tostring(#Players:GetPlayers()))
+                    elseif Option == "Time" then
+                        TableInsert(TextParts, "Time: " .. os.date("%H:%M:%S"))
+                    end
+                end
+            end
+
+            Items["Text"].Instance.Text = TableConcat(TextParts, "  |  ")
+        end
+
+        function Watermark:StartUpdating(DisplayOptions)
+            if Watermark.UpdateConnection and Watermark.UpdateConnection.Connection then
+                Watermark.UpdateConnection.Connection:Disconnect()
+            end
+
+            Watermark:UpdateText(DisplayOptions)
+
+            local FPSAccum = 0
+            local FPSFrames = 0
+            local TextAccum = 0
+
+            Watermark.UpdateConnection = Library:Connect(RunService.RenderStepped, function(Delta)
+                FPSAccum += Delta
+                FPSFrames += 1
+                TextAccum += Delta
+
+                if FPSAccum >= 0.25 then
+                    Watermark.LastFPS = math.floor(FPSFrames / FPSAccum + 0.5)
+                    FPSAccum = 0
+                    FPSFrames = 0
+                end
+
+                if TextAccum >= 1 then
+                    TextAccum = 0
+                    Watermark:UpdateText(DisplayOptions)
+                end
+            end, "WatermarkUpdate" .. HttpService:GenerateGUID(false))
+        end
+
+        function Watermark:SetVisibility(Bool)
+            Items["Watermark"].Instance.Visible = Bool
+        end
+
+        return Watermark
+    end
+
+    local OriginalWindow = Library.Window
+    Library.Window = function(self, Data)
+        Data = Data or { }
+
+        local NormalizedLogo = PatchNormalizeAssetId(Data.Logo or Data.logo or "")
+        Data.Logo = NormalizedLogo
+        Data.logo = NormalizedLogo
+
+        local LogoText = Data.LogoText or Data.logotext or Data.TextLogo or Data.textlogo
+        local LogoTextColor = Data.LogoTextColor or Data.logotextcolor or "Accent"
+
+        local Window = OriginalWindow(self, Data)
+
+        if LogoText and Window.Items and Window.Items["Side"] then
+            if Window.Items["Logo"] then
+                Window.Items["Logo"].Instance.Visible = false
+            end
+
+            local LogoTextLabel = Instances:Create("TextLabel", {
+                Parent = Window.Items["Side"].Instance,
+                Name = "\0",
+                FontFace = Library.Font,
+                TextColor3 = FromRGB(235, 235, 235),
+                BorderColor3 = FromRGB(0, 0, 0),
+                Text = tostring(LogoText),
+                BackgroundTransparency = 1,
+                AnchorPoint = Vector2New(0.5, 0),
+                Position = UDim2New(0.5, 0, 0, 30),
+                Size = UDim2New(1, -24, 0, 32),
+                BorderSizePixel = 0,
+                TextWrapped = true,
+                TextSize = 16,
+                BackgroundColor3 = FromRGB(255, 255, 255)
+            })  LogoTextLabel:AddToTheme({TextColor3 = PatchResolveColor(LogoTextColor, "Accent")})
+
+            LogoTextLabel:TextBorder()
+            Window.Items["LogoText"] = LogoTextLabel
+        end
+
+        return Window
+    end
+
+    local OriginalInventoryViewer = Library.InventoryViewer
+    Library.InventoryViewer = function(self)
+        local Viewer = OriginalInventoryViewer(self)
+
+        local RawSetPlayer = Viewer.SetPlayer
+        function Viewer:SetPlayer(Value)
+            if not Value or not Value.UserId then
+                return
+            end
+
+            return RawSetPlayer(self, Value)
+        end
+
+        local RawAddTool = Viewer.AddTool
+        function Viewer:AddTool(Name, Image)
+            local NewItem = RawAddTool(self, Name, PatchNormalizeAssetId(Image))
+
+            if not NewItem then
+                return
+            end
+
+            local RawRemove = NewItem.Remove
+            function NewItem:Remove()
+                RawRemove(self)
+
+                local Index = TableFind(Viewer.Items, NewItem)
+                if Index then
+                    TableRemove(Viewer.Items, Index)
+                end
+            end
+
+            return NewItem
+        end
+
+        return Viewer
+    end
+
+    Components.Button = function(self, Data)
+        Data = Data or { }
+
+        local Button = { }
+
+        local Items = { } do
+            Items["Button"] = Instances:Create("Frame", {
+                Parent = Data.Parent.Instance,
+                Name = "\0",
+                BackgroundTransparency = 1,
+                BorderColor3 = FromRGB(0, 0, 0),
+                Size = UDim2New(1, 0, 0, 0),
+                BorderSizePixel = 0,
+                AutomaticSize = Enum.AutomaticSize.Y,
+                BackgroundColor3 = FromRGB(255, 255, 255)
+            })
+
+            Instances:Create("UIListLayout", {
+                Parent = Items["Button"].Instance,
+                Name = "\0",
+                FillDirection = Enum.FillDirection.Horizontal,
+                HorizontalFlex = Enum.UIFlexAlignment.Fill,
+                Padding = UDimNew(0, 8),
+                SortOrder = Enum.SortOrder.LayoutOrder
+            })
+        end
+
+        function Button:Add(Name, Callback, Options)
+            Options = Options or { }
+
+            local NewButton = { }
+
+            local TextStyle = PatchResolveColor(Options.TextColor or Options.textcolor or Data.TextColor or Data.textcolor or "Text", "Text")
+
+            local SubItems = { } do
+                SubItems["NewButton"] = Instances:Create("TextButton", {
+                    Parent = Items["Button"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = FromRGB(0, 0, 0),
+                    BorderColor3 = FromRGB(12, 12, 12),
+                    Text = "",
+                    AutoButtonColor = false,
+                    Size = UDim2New(1, 0, 0, 20),
+                    BorderSizePixel = 2,
+                    ClipsDescendants = true,
+                    TextSize = 14,
+                    BackgroundColor3 = FromRGB(30, 36, 31)
+                })  SubItems["NewButton"]:AddToTheme({BackgroundColor3 = "Element", BorderColor3 = "Border"})
+
+                Instances:Create("UIGradient", {
+                    Parent = SubItems["NewButton"].Instance,
+                    Name = "\0",
+                    Rotation = -165,
+                    Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(208, 208, 208))}
+                }):AddToTheme({Color = function()
+                    return RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, Library.Theme.Gradient)}
+                end})
+
+                Instances:Create("UIStroke", {
+                    Parent = SubItems["NewButton"].Instance,
+                    Name = "\0",
+                    Color = FromRGB(42, 49, 45),
+                    LineJoinMode = Enum.LineJoinMode.Miter,
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                }):AddToTheme({Color = "Outline"})
+
+                SubItems["Text"] = Instances:Create("TextLabel", {
+                    Parent = SubItems["NewButton"].Instance,
+                    Name = "\0",
+                    FontFace = Library.Font,
+                    TextColor3 = FromRGB(235, 235, 235),
+                    BorderColor3 = FromRGB(0, 0, 0),
+                    Text = tostring(Name),
+                    BackgroundTransparency = 1,
+                    Size = UDim2New(1, -4, 1, 0),
+                    BorderSizePixel = 0,
+                    TextSize = 9,
+                    TextTruncate = Enum.TextTruncate.AtEnd,
+                    BackgroundColor3 = FromRGB(255, 255, 255)
+                })  SubItems["Text"]:AddToTheme({TextColor3 = TextStyle})
+
+                SubItems["Text"]:TextBorder()
+            end
+
+            function NewButton:SetText(Text)
+                SubItems["Text"].Instance.Text = tostring(Text)
+            end
+
+            function NewButton:SetTextColor(Value)
+                PatchApplyThemedProperty(SubItems["Text"], "TextColor3", Value, "Text")
+            end
+
+            function NewButton:Press()
+                task.spawn(function()
+                    SubItems["NewButton"]:ChangeItemTheme({BackgroundColor3 = "Accent", BorderColor3 = "Border"})
+                    SubItems["NewButton"]:Tween(nil, {BackgroundColor3 = Library.Theme.Accent})
+
+                    Library:SafeCall(Callback)
+                    task.wait(0.1)
+
+                    SubItems["NewButton"]:ChangeItemTheme({BackgroundColor3 = "Element", BorderColor3 = "Border"})
+                    SubItems["NewButton"]:Tween(nil, {BackgroundColor3 = Library.Theme.Element})
+                end)
+            end
+
+            function NewButton:SetVisibility(Bool)
+                SubItems["NewButton"].Instance.Visible = Bool
+            end
+
+            local PageSearchData = Library.SearchItems[Data.Page]
+
+            if PageSearchData then
+                local SearchData = {
+                    Element = SubItems["NewButton"],
+                    Name = tostring(Name),
+                }
+
+                TableInsert(PageSearchData, SearchData)
+            end
+
+            SubItems["NewButton"]:OnHover(function()
+                SubItems["NewButton"]:ChangeItemTheme({BackgroundColor3 = "Hovered Element", BorderColor3 = "Border"})
+                SubItems["NewButton"]:Tween(nil, {BackgroundColor3 = Library.Theme["Hovered Element"]})
+            end)
+
+            SubItems["NewButton"]:OnHoverLeave(function()
+                SubItems["NewButton"]:ChangeItemTheme({BackgroundColor3 = "Element", BorderColor3 = "Border"})
+                SubItems["NewButton"]:Tween(nil, {BackgroundColor3 = Library.Theme.Element})
+            end)
+
+            SubItems["NewButton"]:Connect("MouseButton1Down", function()
+                NewButton:Press()
+            end)
+
+            return NewButton
+        end
+
+        function Button:SetVisibility(Bool)
+            Items["Button"].Instance.Visible = Bool
+        end
+
+        return Button, Items
+    end
+
+    Components.Slider = function(self, Data)
+        local Slider = {
+            Value = 0,
+            Flag = Data.Flag,
+            Sliding = false,
+            Step = Data.Step or Data.step or Data.Decimals or Data.decimals or 1
+        }
+
+        local TitleStyle = PatchResolveColor(Data.TextColor or Data.textcolor or "Text", "Text")
+        local ValueStyle = PatchResolveColor(Data.ValueTextColor or Data.valuetextcolor or "Text", "Text")
+        local ButtonTextStyle = PatchResolveColor(Data.ButtonTextColor or Data.buttontextcolor or "Text", "Text")
+
+        local Items = { } do
+            Items["Slider"] = Instances:Create("Frame", {
+                Parent = Data.Parent.Instance,
+                Name = "\0",
+                BackgroundTransparency = 1,
+                BorderColor3 = FromRGB(0, 0, 0),
+                Size = UDim2New(1, 0, 0, 32),
+                BorderSizePixel = 0,
+                BackgroundColor3 = FromRGB(255, 255, 255)
+            })
+
+            Items["Minus"] = Instances:Create("TextButton", {
+                Parent = Items["Slider"].Instance,
+                Name = "\0",
+                FontFace = Library.Font,
+                TextColor3 = FromRGB(235, 235, 235),
+                BorderColor3 = FromRGB(12, 12, 12),
+                Text = "-",
+                AutoButtonColor = false,
+                Size = UDim2New(0, 16, 0, 14),
+                BorderSizePixel = 2,
+                BackgroundColor3 = FromRGB(30, 36, 31)
+            })  Items["Minus"]:AddToTheme({BackgroundColor3 = "Element", BorderColor3 = "Border", TextColor3 = ButtonTextStyle})
+
+            Instances:Create("UIStroke", {
+                Parent = Items["Minus"].Instance,
+                Name = "\0",
+                Color = FromRGB(42, 49, 45),
+                LineJoinMode = Enum.LineJoinMode.Miter,
+                ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            }):AddToTheme({Color = "Outline"})
+
+            Items["Minus"]:TextBorder()
+
+            Items["Plus"] = Instances:Create("TextButton", {
+                Parent = Items["Slider"].Instance,
+                Name = "\0",
+                FontFace = Library.Font,
+                TextColor3 = FromRGB(235, 235, 235),
+                BorderColor3 = FromRGB(12, 12, 12),
+                Text = "+",
+                AutoButtonColor = false,
+                AnchorPoint = Vector2New(1, 0),
+                Position = UDim2New(1, 0, 0, 0),
+                Size = UDim2New(0, 16, 0, 14),
+                BorderSizePixel = 2,
+                BackgroundColor3 = FromRGB(30, 36, 31)
+            })  Items["Plus"]:AddToTheme({BackgroundColor3 = "Element", BorderColor3 = "Border", TextColor3 = ButtonTextStyle})
+
+            Instances:Create("UIStroke", {
+                Parent = Items["Plus"].Instance,
+                Name = "\0",
+                Color = FromRGB(42, 49, 45),
+                LineJoinMode = Enum.LineJoinMode.Miter,
+                ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            }):AddToTheme({Color = "Outline"})
+
+            Items["Plus"]:TextBorder()
+
+            Items["Text"] = Instances:Create("TextLabel", {
+                Parent = Items["Slider"].Instance,
+                Name = "\0",
+                FontFace = Library.Font,
+                TextColor3 = FromRGB(235, 235, 235),
+                BorderColor3 = FromRGB(0, 0, 0),
+                Text = Data.Name,
+                BackgroundTransparency = 1,
+                Position = UDim2New(0, 22, 0, 0),
+                Size = UDim2New(0, 0, 0, 15),
+                BorderSizePixel = 0,
+                AutomaticSize = Enum.AutomaticSize.X,
+                TextSize = 9,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                BackgroundColor3 = FromRGB(255, 255, 255)
+            })  Items["Text"]:AddToTheme({TextColor3 = TitleStyle})
+
+            Items["Text"]:TextBorder()
+
+            Items["Value"] = Instances:Create("TextLabel", {
+                Parent = Items["Slider"].Instance,
+                Name = "\0",
+                FontFace = Library.Font,
+                TextColor3 = FromRGB(235, 235, 235),
+                BorderColor3 = FromRGB(0, 0, 0),
+                Text = "0",
+                AnchorPoint = Vector2New(1, 0),
+                BackgroundTransparency = 1,
+                Position = UDim2New(1, -22, 0, 0),
+                Size = UDim2New(0, 0, 0, 15),
+                BorderSizePixel = 0,
+                AutomaticSize = Enum.AutomaticSize.X,
+                TextSize = 9,
+                TextXAlignment = Enum.TextXAlignment.Right,
+                BackgroundColor3 = FromRGB(255, 255, 255)
+            })  Items["Value"]:AddToTheme({TextColor3 = ValueStyle})
+
+            Items["Value"]:TextBorder()
+
+            Items["RealSlider"] = Instances:Create("TextButton", {
+                Parent = Items["Slider"].Instance,
+                AutoButtonColor = false,
+                Text = "",
+                Name = "\0",
+                AnchorPoint = Vector2New(0, 1),
+                Position = UDim2New(0, 0, 1, 0),
+                BorderColor3 = FromRGB(12, 12, 12),
+                Size = UDim2New(1, 0, 0, 10),
+                BorderSizePixel = 2,
+                BackgroundColor3 = FromRGB(30, 36, 31)
+            })  Items["RealSlider"]:AddToTheme({BackgroundColor3 = "Element", BorderColor3 = "Border"})
+
+            Instances:Create("UIGradient", {
+                Parent = Items["RealSlider"].Instance,
+                Name = "\0",
+                Rotation = -165,
+                Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(208, 208, 208))}
+            }):AddToTheme({Color = function()
+                return RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, Library.Theme.Gradient)}
+            end})
+
+            Instances:Create("UIStroke", {
+                Parent = Items["RealSlider"].Instance,
+                Name = "\0",
+                Color = FromRGB(42, 49, 45),
+                LineJoinMode = Enum.LineJoinMode.Miter,
+                ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+            }):AddToTheme({Color = "Outline"})
+
+            Items["Accent"] = Instances:Create("Frame", {
+                Parent = Items["RealSlider"].Instance,
+                Name = "\0",
+                BorderColor3 = FromRGB(0, 0, 0),
+                Size = UDim2New(0, 0, 1, 0),
+                BorderSizePixel = 0,
+                BackgroundColor3 = FromRGB(202, 243, 255)
+            })  Items["Accent"]:AddToTheme({BackgroundColor3 = "Accent"})
+
+            Instances:Create("UIGradient", {
+                Parent = Items["Accent"].Instance,
+                Name = "\0",
+                Rotation = -165,
+                Color = RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, FromRGB(208, 208, 208))}
+            }):AddToTheme({Color = function()
+                return RGBSequence{RGBSequenceKeypoint(0, FromRGB(255, 255, 255)), RGBSequenceKeypoint(1, Library.Theme.Gradient)}
+            end})
+        end
+
+        function Slider:Get()
+            return Slider.Value
+        end
+
+        function Slider:SetTextColor(Value)
+            PatchApplyThemedProperty(Items["Text"], "TextColor3", Value, "Text")
+        end
+
+        function Slider:SetValueTextColor(Value)
+            PatchApplyThemedProperty(Items["Value"], "TextColor3", Value, "Text")
+        end
+
+        function Slider:SetVisibility(Bool)
+            Items["Slider"].Instance.Visible = Bool
+        end
+
+        function Slider:Set(Value)
+            Slider.Value = Library:Round(MathClamp(Value, Data.Min, Data.Max), Data.Decimals)
+
+            Library.Flags[Slider.Flag] = Slider.Value
+
+            local Percentage = (Slider.Value - Data.Min) / (Data.Max - Data.Min)
+            Items["Accent"]:Tween(TweenInfo.new(Library.Tween.Time, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2New(Percentage, 0, 1, 0)})
+            Items["Value"].Instance.Text = StringFormat("%s%s", tostring(Slider.Value), Data.Suffix)
+
+            if Data.Callback then
+                Library:SafeCall(Data.Callback, Slider.Value)
+            end
+        end
+
+        local InputChanged
+
+        local function SetFromInput()
+            local SizeX = (Mouse.X - Items["RealSlider"].Instance.AbsolutePosition.X) / Items["RealSlider"].Instance.AbsoluteSize.X
+            local Value = ((Data.Max - Data.Min) * SizeX) + Data.Min
+            Slider:Set(Value)
+        end
+
+        Items["RealSlider"]:Connect("InputBegan", function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+                Slider.Sliding = true
+                SetFromInput()
+
+                if InputChanged then
+                    return
+                end
+
+                InputChanged = Input.Changed:Connect(function()
+                    if Input.UserInputState == Enum.UserInputState.End then
+                        Slider.Sliding = false
+
+                        InputChanged:Disconnect()
+                        InputChanged = nil
+                    end
+                end)
+            end
+        end)
+
+        Library:Connect(UserInputService.InputChanged, function(Input)
+            if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+                if Slider.Sliding then
+                    SetFromInput()
+                end
+            end
+        end)
+
+        Items["Minus"]:Connect("MouseButton1Down", function()
+            Slider:Set(Slider.Value - Slider.Step)
+        end)
+
+        Items["Plus"]:Connect("MouseButton1Down", function()
+            Slider:Set(Slider.Value + Slider.Step)
+        end)
+
+        Items["Slider"]:OnHover(function()
+            Items["RealSlider"]:ChangeItemTheme({BackgroundColor3 = "Hovered Element", BorderColor3 = "Border"})
+            Items["RealSlider"]:Tween(nil, {BackgroundColor3 = Library.Theme["Hovered Element"]})
+        end)
+
+        Items["Slider"]:OnHoverLeave(function()
+            Items["RealSlider"]:ChangeItemTheme({BackgroundColor3 = "Element", BorderColor3 = "Border"})
+            Items["RealSlider"]:Tween(nil, {BackgroundColor3 = Library.Theme["Element"]})
+        end)
+
+        if Data.Default ~= nil then
+            Slider:Set(Data.Default)
+        end
+
+        Library.SetFlags[Slider.Flag] = function(Value)
+            Slider:Set(Value)
+        end
+
+        return Slider, Items
+    end
+
+    local OriginalToggle = Components.Toggle
+    Components.Toggle = function(self, Data)
+        local Toggle, Items = OriginalToggle(self, Data)
+
+        Toggle.LinkedElements = { }
+        Toggle.Items = Items
+
+        function Toggle:SetTextColor(Value)
+            PatchApplyThemedProperty(Items["Text"], "TextColor3", Value, "Text")
+        end
+
+        function Toggle:BindVisibility(...)
+            local Elements = PatchCollectElements(...)
+
+            for _, Element in Elements do
+                if Element then
+                    TableInsert(self.LinkedElements, Element)
+
+                    if Element.SetVisibility then
+                        Element:SetVisibility(self.Value)
+                    end
+                end
+            end
+
+            return self
+        end
+
+        Toggle.AddLinkedElements = Toggle.BindVisibility
+        Toggle.Link = Toggle.BindVisibility
+
+        local RawSet = Toggle.Set
+        function Toggle:Set(Value)
+            RawSet(self, Value)
+
+            task.spawn(function()
+                task.wait()
+
+                for _, Element in self.LinkedElements do
+                    if Element and Element.SetVisibility then
+                        Library:SafeCall(function()
+                            Element:SetVisibility(self.Value)
+                        end)
+                    end
+                end
+            end)
+        end
+
+        local RawSetVisibility = Toggle.SetVisibility
+        function Toggle:SetVisibility(Bool)
+            RawSetVisibility(self, Bool)
+
+            if not Bool then
+                for _, Element in self.LinkedElements do
+                    if Element and Element.SetVisibility then
+                        Library:SafeCall(function()
+                            Element:SetVisibility(false)
+                        end)
+                    end
+                end
+            else
+                for _, Element in self.LinkedElements do
+                    if Element and Element.SetVisibility then
+                        Library:SafeCall(function()
+                            Element:SetVisibility(self.Value)
+                        end)
+                    end
+                end
+            end
+        end
+
+        if Data.TextColor or Data.textcolor or Data.TextTheme or Data.texttheme then
+            Toggle:SetTextColor(Data.TextColor or Data.textcolor or Data.TextTheme or Data.texttheme)
+        end
+
+        return Toggle, Items
+    end
+
+    local OriginalLabel = Components.Label
+    Components.Label = function(self, Data)
+        local Label, Items = OriginalLabel(self, Data)
+        Label.Items = Items
+
+        function Label:SetTextColor(Value)
+            PatchApplyThemedProperty(Items["Text"], "TextColor3", Value, "Text")
+        end
+
+        if Data.TextColor or Data.textcolor or Data.TextTheme or Data.texttheme then
+            Label:SetTextColor(Data.TextColor or Data.textcolor or Data.TextTheme or Data.texttheme)
+        end
+
+        return Label, Items
+    end
+
+    local OriginalDropdown = Components.Dropdown
+    Components.Dropdown = function(self, Data)
+        local Dropdown, Items = OriginalDropdown(self, Data)
+        Dropdown.Items = Items
+
+        function Dropdown:SetTextColor(Value)
+            PatchApplyThemedProperty(Items["Text"], "TextColor3", Value, "Text")
+        end
+
+        function Dropdown:SetValueTextColor(Value)
+            PatchApplyThemedProperty(Items["Value"], "TextColor3", Value, "Text")
+        end
+
+        local RawSetOpen = Dropdown.SetOpen
+        function Dropdown:SetOpen(Bool)
+            if not Data.Debounce then
+                PatchSetFrameOpen(Dropdown, Bool, nil)
+            else
+                PatchSetFrameOpen(Dropdown, Bool, Data.Debounce)
+            end
+
+            return RawSetOpen(self, Bool)
+        end
+
+        function Dropdown:Set(Option)
+            if Data.Multi then
+                if type(Option) ~= "table" then
+                    return
+                end
+
+                Dropdown.Value = { }
+
+                for _, Value in Dropdown.Options do
+                    Value.Selected = false
+                    Value:Toggle("Inactive")
+                end
+
+                for _, Value in Option do
+                    local OptionData = Dropdown.Options[Value]
+
+                    if OptionData then
+                        OptionData.Selected = true
+                        OptionData:Toggle("Active")
+                        TableInsert(Dropdown.Value, OptionData.Name)
+                    end
+                end
+
+                Library.Flags[Dropdown.Flag] = Dropdown.Value
+                Items["Value"].Instance.Text = #Dropdown.Value > 0 and TableConcat(Dropdown.Value, ", ") or "--"
+
+                if Data.Callback then
+                    Library:SafeCall(Data.Callback, Dropdown.Value)
+                end
+            else
+                if Option == nil then
+                    Dropdown.Value = nil
+                    Library.Flags[Dropdown.Flag] = nil
+
+                    for _, Value in Dropdown.Options do
+                        Value.Selected = false
+                        Value:Toggle("Inactive")
+                    end
+
+                    Items["Value"].Instance.Text = "--"
+
+                    if Data.Callback then
+                        Library:SafeCall(Data.Callback, Dropdown.Value)
+                    end
+
+                    return
+                end
+
+                if not Dropdown.Options[Option] then
+                    return
+                end
+
+                local OptionData = Dropdown.Options[Option]
+
+                Dropdown.Value = Option
+                Library.Flags[Dropdown.Flag] = Option
+
+                for _, Value in Dropdown.Options do
+                    if Value ~= OptionData then
+                        Value.Selected = false
+                        Value:Toggle("Inactive")
+                    else
+                        Value.Selected = true
+                        Value:Toggle("Active")
+                    end
+                end
+
+                Items["Value"].Instance.Text = Option
+
+                if Data.Callback then
+                    Library:SafeCall(Data.Callback, Dropdown.Value)
+                end
+            end
+        end
+
+        local RawRefresh = Dropdown.Refresh
+        function Dropdown:Refresh(List)
+            RawRefresh(self, List)
+
+            Dropdown.Value = Data.Multi and { } or nil
+            Library.Flags[Dropdown.Flag] = Dropdown.Value
+            Items["Value"].Instance.Text = "--"
+        end
+
+        if Data.TextColor or Data.textcolor or Data.TextTheme or Data.texttheme then
+            Dropdown:SetTextColor(Data.TextColor or Data.textcolor or Data.TextTheme or Data.texttheme)
+        end
+
+        if Data.ValueTextColor or Data.valuetextcolor then
+            Dropdown:SetValueTextColor(Data.ValueTextColor or Data.valuetextcolor)
+        end
+
+        return Dropdown, Items
+    end
+
+    local OriginalTextbox = Components.Textbox
+    Components.Textbox = function(self, Data)
+        local Textbox, Items = OriginalTextbox(self, Data)
+        Textbox.Items = Items
+
+        function Textbox:SetTextColor(Value)
+            PatchApplyThemedProperty(Items["Text"], "TextColor3", Value, "Text")
+        end
+
+        if Data.TextColor or Data.textcolor or Data.TextTheme or Data.texttheme then
+            Textbox:SetTextColor(Data.TextColor or Data.textcolor or Data.TextTheme or Data.texttheme)
+        end
+
+        return Textbox, Items
+    end
+
+    local OriginalSearchbox = Components.Searchbox
+    Components.Searchbox = function(self, Data)
+        local Searchbox, Items = OriginalSearchbox(self, Data)
+        Searchbox.Items = Items
+
+        Items["Listbox"].Instance.Size = UDim2New(1, 0, 0, 205)
+
+        Items["Text"] = Instances:Create("TextLabel", {
+            Parent = Items["Listbox"].Instance,
+            Name = "\0",
+            FontFace = Library.Font,
+            TextColor3 = FromRGB(235, 235, 235),
+            BorderColor3 = FromRGB(0, 0, 0),
+            Text = tostring(Data.Name or "Searchbox"),
+            Size = UDim2New(0, 0, 0, 15),
+            BackgroundTransparency = 1,
+            BorderSizePixel = 0,
+            AutomaticSize = Enum.AutomaticSize.X,
+            TextSize = 9,
+            BackgroundColor3 = FromRGB(255, 255, 255)
+        })  Items["Text"]:AddToTheme({TextColor3 = PatchResolveColor(Data.TextColor or Data.textcolor or "Text", "Text")})
+
+        Items["Text"]:TextBorder()
+
+        Items["Search"].Instance.Position = UDim2New(0, 0, 0, 20)
+        Items["RealListbox"].Instance.Position = UDim2New(0, 0, 0, 48)
+        Items["RealListbox"].Instance.Size = UDim2New(1, 0, 1, -48)
+
+        function Searchbox:SetTextColor(Value)
+            PatchApplyThemedProperty(Items["Text"], "TextColor3", Value, "Text")
+        end
+
+        function Searchbox:Set(Option)
+            if Data.Multi then
+                if type(Option) ~= "table" then
+                    return
+                end
+
+                Searchbox.Value = { }
+
+                for _, Value in Searchbox.Options do
+                    Value.Selected = false
+                    Value:Toggle("Inactive")
+                end
+
+                for _, Value in Option do
+                    local OptionData = Searchbox.Options[Value]
+
+                    if OptionData then
+                        OptionData.Selected = true
+                        OptionData:Toggle("Active")
+                        TableInsert(Searchbox.Value, OptionData.Name)
+                    end
+                end
+
+                Library.Flags[Searchbox.Flag] = Searchbox.Value
+
+                if Data.Callback then
+                    Library:SafeCall(Data.Callback, Searchbox.Value)
+                end
+            else
+                if Option == nil then
+                    Searchbox.Value = nil
+                    Library.Flags[Searchbox.Flag] = nil
+
+                    for _, Value in Searchbox.Options do
+                        Value.Selected = false
+                        Value:Toggle("Inactive")
+                    end
+
+                    if Data.Callback then
+                        Library:SafeCall(Data.Callback, Searchbox.Value)
+                    end
+
+                    return
+                end
+
+                if not Searchbox.Options[Option] then
+                    return
+                end
+
+                local OptionData = Searchbox.Options[Option]
+
+                Searchbox.Value = Option
+                Library.Flags[Searchbox.Flag] = Option
+
+                for _, Value in Searchbox.Options do
+                    if Value ~= OptionData then
+                        Value.Selected = false
+                        Value:Toggle("Inactive")
+                    else
+                        Value.Selected = true
+                        Value:Toggle("Active")
+                    end
+                end
+
+                if Data.Callback then
+                    Library:SafeCall(Data.Callback, Searchbox.Value)
+                end
+            end
+        end
+
+        local RawRefresh = Searchbox.Refresh
+        function Searchbox:Refresh(List)
+            RawRefresh(self, List)
+            Searchbox.Value = Data.Multi and { } or nil
+            Library.Flags[Searchbox.Flag] = Searchbox.Value
+        end
+
+        return Searchbox, Items
+    end
+
+    local OriginalKeybind = Components.Keybind
+    Components.Keybind = function(self, Data)
+        local Keybind, Items = OriginalKeybind(self, Data)
+        Keybind.Items = Items
+
+        if Data.Parent and Data.Parent.Instance then
+            Items["KeyButton"].Instance.Parent = Data.Parent.Instance
+            Items["KeyButton"].Instance.AnchorPoint = Vector2New(0, 0.5)
+            Items["KeyButton"].Instance.Position = UDim2New(0, 0, 0.5, 0)
+            Items["KeyButton"].Instance.TextXAlignment = Enum.TextXAlignment.Center
+        end
+
+        local RawSetOpen = Keybind.SetOpen
+        function Keybind:SetOpen(Bool)
+            PatchSetFrameOpen(Keybind, Bool, nil)
+            return RawSetOpen(self, Bool)
+        end
+
+        if Data.TextColor or Data.textcolor then
+            PatchApplyThemedProperty(Items["KeyButton"], "TextColor3", Data.TextColor or Data.textcolor, "Text")
+        end
+
+        return Keybind, Items
+    end
+
+    local OriginalColorpicker = Components.Colorpicker
+    Components.Colorpicker = function(self, Data)
+        Data = Data or { }
+
+        if type(Data.Default) == "table" and typeof(Data.Default) ~= "Color3" and not Data.Default.R then
+            Data.Alpha = Data.Alpha ~= nil and Data.Alpha or Data.Default[4]
+            Data.Default = FromRGB(Data.Default[1] or 255, Data.Default[2] or 255, Data.Default[3] or 255)
+        end
+
+        local Colorpicker, Items = OriginalColorpicker(self, Data)
+        Colorpicker.Items = Items
+
+        local RawSet = Colorpicker.Set
+        function Colorpicker:Set(Color, Alpha)
+            if type(Color) == "table" and typeof(Color) ~= "Color3" and not Color.R then
+                local Red = Color[1] or 255
+                local Green = Color[2] or 255
+                local Blue = Color[3] or 255
+                Alpha = Alpha ~= nil and Alpha or Color[4]
+                Color = FromRGB(Red, Green, Blue)
+            end
+
+            if type(Color) == "string" and StringFind(Color, "rbxassetid://") then
+                return
+            end
+
+            return RawSet(self, Color, Alpha)
+        end
+
+        local RawUpdate = Colorpicker.Update
+        function Colorpicker:Update(IsFromAlpha, UpdateSync)
+            RawUpdate(self, IsFromAlpha, UpdateSync)
+
+            if Items["HSVColor"] then
+                local Hue, Sat, Val = self.Color:ToHSV()
+                Items["HSVColor"].Instance.Text = StringFormat("HSV: %.3f, %.3f, %.3f", Hue, Sat, Val)
+            end
+        end
+
+        local RawSetOpen = Colorpicker.SetOpen
+        function Colorpicker:SetOpen(Bool)
+            if not Data.Debounce then
+                PatchSetFrameOpen(Colorpicker, Bool, nil)
+            end
+
+            return RawSetOpen(self, Bool)
+        end
+
+        if Items["HSVColor"] then
+            local Hue, Sat, Val = Colorpicker.Color:ToHSV()
+            Items["HSVColor"].Instance.Text = StringFormat("HSV: %.3f, %.3f, %.3f", Hue, Sat, Val)
+        end
+
+        return Colorpicker, Items
+    end
+
+    Library.Sections.Toggle = function(self, Data)
+        Data = Data or { }
+
+        local Toggle = {
+            Window = self.Window,
+            Page = self.Page,
+            Section = self,
+
+            Name = Data.Name or Data.name or "Toggle",
+            Flag = Data.Flag or Data.flag or Library:NextFlag(),
+            Default = Data.Default or Data.default or false,
+            Callback = Data.Callback or Data.callback or function() end,
+            TextColor = Data.TextColor or Data.textcolor or Data.TextTheme or Data.texttheme
+        }
+
+        local NewToggle, ToggleItems = Components:Toggle({
+            Name = Toggle.Name,
+            Parent = Toggle.Section.Items["Content"],
+            Flag = Toggle.Flag,
+            Default = Toggle.Default,
+            Page = Toggle.Page,
+            Callback = Toggle.Callback,
+            TextColor = Toggle.TextColor
+        })
+
+        function NewToggle:Colorpicker(Data)
+            local Colorpicker = {
+                Window = self.Window,
+                Page = self.Page,
+                Section = self,
+
+                Flag = Data.Flag or Data.flag or Library:NextFlag(),
+                Default = Data.Default or Data.default or Color3.fromRGB(255, 255, 255),
+                Callback = Data.Callback or Data.callback or function() end,
+                Alpha = Data.Alpha or Data.alpha or 0,
+            }
+
+            local NewColorpicker = Components:Colorpicker({
+                Name = Colorpicker.Name,
+                Parent = ToggleItems["SubElements"],
+                Pages = true,
+                Page = Colorpicker.Page,
+                Flag = Colorpicker.Flag,
+                Default = Colorpicker.Default,
+                Alpha = Colorpicker.Alpha,
+                Callback = Colorpicker.Callback,
+            })
+
+            return NewColorpicker
+        end
+
+        function NewToggle:Keybind(Data)
+            Data = Data or { }
+
+            local Keybind = {
+                Window = self.Window,
+                Page = self.Page,
+                Section = self.Section,
+
+                Flag = Data.Flag or Data.flag or Library:NextFlag(),
+                Default = Data.Default or Data.default or Enum.KeyCode.RightShift,
+                Callback = Data.Callback or Data.callback or function() end,
+                Mode = Data.Mode or Data.mode or "Toggle",
+                TextColor = Data.TextColor or Data.textcolor
+            }
+
+            local NewKeybind = Components:Keybind({
+                Name = Toggle.Name,
+                Parent = ToggleItems["SubElements"],
+                Page = Keybind.Page,
+                Flag = Keybind.Flag,
+                Default = Keybind.Default,
+                Mode = Keybind.Mode,
+                Callback = Keybind.Callback,
+                TextColor = Keybind.TextColor
+            })
+
+            return NewKeybind
+        end
+
+        return NewToggle
+    end
+
+    Library.Sections.Slider = function(self, Data)
+        Data = Data or { }
+
+        local Slider = {
+            Window = self.Window,
+            Page = self.Page,
+            Section = self,
+
+            Name = Data.Name or Data.name or "Slider",
+            Flag = Data.Flag or Data.flag or Library:NextFlag(),
+            Min = Data.Min or Data.min or 0,
+            Decimals = Data.Decimals or Data.decimals or 1,
+            Step = Data.Step or Data.step or Data.Decimals or Data.decimals or 1,
+            Suffix = Data.Suffix or Data.suffix or "",
+            Max = Data.Max or Data.max or 100,
+            Default = Data.Default or Data.default or 0,
+            Callback = Data.Callback or Data.callback or function() end,
+            TextColor = Data.TextColor or Data.textcolor or Data.TextTheme or Data.texttheme,
+            ValueTextColor = Data.ValueTextColor or Data.valuetextcolor
+        }
+
+        local NewSlider, SliderItems = Components:Slider({
+            Name = Slider.Name,
+            Parent = Slider.Section.Items["Content"],
+            Flag = Slider.Flag,
+            Min = Slider.Min,
+            Page = Slider.Page,
+            Decimals = Slider.Decimals,
+            Step = Slider.Step,
+            Suffix = Slider.Suffix,
+            Max = Slider.Max,
+            Default = Slider.Default,
+            Callback = Slider.Callback,
+            TextColor = Slider.TextColor,
+            ValueTextColor = Slider.ValueTextColor
+        })
+
+        local PageSearchData = Library.SearchItems[Slider.Page]
+
+        if PageSearchData then
+            local SearchData = {
+                Element = SliderItems["Slider"],
+                Name = Slider.Name,
+            }
+
+            TableInsert(PageSearchData, SearchData)
+        end
+
+        return NewSlider
+    end
+
+    Library.Sections.Dropdown = function(self, Data)
+        Data = Data or { }
+
+        local Dropdown = {
+            Window = self.Window,
+            Page = self.Page,
+            Section = self,
+
+            Name = Data.Name or Data.name or "Dropdown",
+            Flag = Data.Flag or Data.flag or Library:NextFlag(),
+            Items = Data.Items or Data.items or { },
+            Default = Data.Default or Data.default or nil,
+            Multi = Data.Multi or Data.multi or false,
+            Callback = Data.Callback or Data.callback or function() end,
+            TextColor = Data.TextColor or Data.textcolor or Data.TextTheme or Data.texttheme,
+            ValueTextColor = Data.ValueTextColor or Data.valuetextcolor
+        }
+
+        local NewDropdown, DropdownItems = Components:Dropdown({
+            Name = Dropdown.Name,
+            Parent = Dropdown.Section.Items["Content"],
+            Flag = Dropdown.Flag,
+            Items = Dropdown.Items,
+            Page = Dropdown.Page,
+            Default = Dropdown.Default,
+            Multi = Dropdown.Multi,
+            Callback = Dropdown.Callback,
+            TextColor = Dropdown.TextColor,
+            ValueTextColor = Dropdown.ValueTextColor
+        })
+
+        local PageSearchData = Library.SearchItems[Dropdown.Page]
+
+        if PageSearchData then
+            local SearchData = {
+                Element = DropdownItems["Dropdown"],
+                Name = Dropdown.Name,
+            }
+
+            TableInsert(PageSearchData, SearchData)
+        end
+
+        return NewDropdown
+    end
+
+    Library.Sections.Label = function(self, Data)
+        if type(Data) ~= "table" then
+            Data = { Name = Data }
+        end
+
+        local Label = {
+            Window = self.Window,
+            Page = self.Page,
+            Section = self,
+
+            Name = Data.Name or Data.name or "Label",
+            TextColor = Data.TextColor or Data.textcolor or Data.TextTheme or Data.texttheme
+        }
+
+        local NewLabel, LabelItems = Components:Label({
+            Name = Label.Name,
+            Parent = Label.Section.Items["Content"],
+            Page = Label.Page,
+            TextColor = Label.TextColor
+        })
+
+        function NewLabel:Colorpicker(Data)
+            Data = Data or { }
+
+            local Colorpicker = {
+                Window = self.Window,
+                Page = self.Page,
+                Section = self.Section,
+
+                Flag = Data.Flag or Data.flag or Library:NextFlag(),
+                Default = Data.Default or Data.default or Color3.fromRGB(255, 255, 255),
+                Callback = Data.Callback or Data.callback or function() end,
+                Alpha = Data.Alpha or Data.alpha or 0,
+            }
+
+            local NewColorpicker = Components:Colorpicker({
+                Name = Colorpicker.Name,
+                Parent = LabelItems["SubElements"],
+                Pages = true,
+                Page = Colorpicker.Page,
+                Flag = Colorpicker.Flag,
+                Default = Colorpicker.Default,
+                Alpha = Colorpicker.Alpha,
+                Callback = Colorpicker.Callback,
+            })
+
+            return NewColorpicker
+        end
+
+        function NewLabel:Keybind(Data)
+            Data = Data or { }
+
+            local Keybind = {
+                Window = self.Window,
+                Page = self.Page,
+                Section = self.Section,
+
+                Flag = Data.Flag or Data.flag or Library:NextFlag(),
+                Default = Data.Default or Data.default or Enum.KeyCode.RightShift,
+                Callback = Data.Callback or Data.callback or function() end,
+                Mode = Data.Mode or Data.mode or "Toggle",
+                TextColor = Data.TextColor or Data.textcolor
+            }
+
+            local NewKeybind = Components:Keybind({
+                Name = Label.Name,
+                Parent = LabelItems["SubElements"],
+                Page = Keybind.Page,
+                Flag = Keybind.Flag,
+                Default = Keybind.Default,
+                Mode = Keybind.Mode,
+                Callback = Keybind.Callback,
+                TextColor = Keybind.TextColor
+            })
+
+            return NewKeybind
+        end
+
+        local PageSearchData = Library.SearchItems[Label.Page]
+
+        if PageSearchData then
+            local SearchData = {
+                Element = LabelItems["Label"],
+                Name = Label.Name,
+            }
+
+            TableInsert(PageSearchData, SearchData)
+        end
+
+        return NewLabel
+    end
+
+    Library.Sections.Textbox = function(self, Data)
+        Data = Data or { }
+
+        local Textbox = {
+            Window = self.Window,
+            Page = self.Page,
+            Section = self,
+
+            Name = Data.Name or Data.name or "Textbox",
+            Flag = Data.Flag or Data.flag or Library:NextFlag(),
+            Default = Data.Default or Data.default or "",
+            Numeric = Data.Numeric or Data.numeric or false,
+            Finished = Data.Finished or Data.finished or false,
+            Placeholder = Data.Placeholder or Data.placeholder or "...",
+            Callback = Data.Callback or Data.callback or function() end,
+            TextColor = Data.TextColor or Data.textcolor or Data.TextTheme or Data.texttheme
+        }
+
+        local NewTextbox, TextboxItems = Components:Textbox({
+            Name = Textbox.Name,
+            Placeholder = Textbox.Placeholder,
+            Parent = Textbox.Section.Items["Content"],
+            Flag = Textbox.Flag,
+            Page = Textbox.Page,
+            Default = Textbox.Default,
+            Numeric = Textbox.Numeric,
+            Finished = Textbox.Finished,
+            Callback = Textbox.Callback,
+            TextColor = Textbox.TextColor
+        })
+
+        local PageSearchData = Library.SearchItems[Textbox.Page]
+
+        if PageSearchData then
+            local SearchData = {
+                Element = TextboxItems["Textbox"],
+                Name = Textbox.Name,
+            }
+
+            TableInsert(PageSearchData, SearchData)
+        end
+
+        return NewTextbox
+    end
+
+    Library.Sections.Searchbox = function(self, Data)
+        Data = Data or { }
+
+        local Searchbox = {
+            Window = self.Window,
+            Page = self.Page,
+            Section = self,
+
+            Name = Data.Name or Data.name or "Searchbox",
+            Flag = Data.Flag or Data.flag or Library:NextFlag(),
+            Items = Data.Items or Data.items or { },
+            Default = Data.Default or Data.default or nil,
+            Multi = Data.Multi or Data.multi or false,
+            Callback = Data.Callback or Data.callback or function() end,
+            TextColor = Data.TextColor or Data.textcolor or Data.TextTheme or Data.texttheme
+        }
+
+        local NewSearchbox, SearchboxItems = Components:Searchbox({
+            Name = Searchbox.Name,
+            Parent = Searchbox.Section.Items["Content"],
+            Flag = Searchbox.Flag,
+            Items = Searchbox.Items,
+            Page = Searchbox.Page,
+            Default = Searchbox.Default,
+            Multi = Searchbox.Multi,
+            Callback = Searchbox.Callback,
+            TextColor = Searchbox.TextColor
+        })
+
+        local PageSearchData = Library.SearchItems[Searchbox.Page]
+
+        if PageSearchData then
+            local SearchData = {
+                Element = SearchboxItems["Listbox"],
+                Name = Searchbox.Name,
+            }
+
+            TableInsert(PageSearchData, SearchData)
+        end
+
+        return NewSearchbox
+    end
+
+    Library.BlankElement = function(self, Data)
+        Data = Data or { }
+
+        local BlankElement = {
+            Name = Data.Name or Data.name or "Blank",
+            Size = Data.Size or Data.size or 18
+        }
+
+        local Parent = Data.Parent and Data.Parent.Instance or Library.Holder.Instance
+
+        local Items = { } do
+            Items["BlankElement"] = Instances:Create("Frame", {
+                Parent = Parent,
+                Name = "\0",
+                BackgroundTransparency = 1,
+                BorderColor3 = FromRGB(0, 0, 0),
+                Size = UDim2New(1, 0, 0, BlankElement.Size),
+                BorderSizePixel = 0,
+                BackgroundColor3 = FromRGB(255, 255, 255)
+            })
+
+            Items["Text"] = Instances:Create("TextLabel", {
+                Parent = Items["BlankElement"].Instance,
+                Name = "\0",
+                FontFace = Library.Font,
+                TextColor3 = FromRGB(235, 235, 235),
+                BorderColor3 = FromRGB(0, 0, 0),
+                Text = BlankElement.Name,
+                Size = UDim2New(0, 0, 0, 15),
+                AnchorPoint = Vector2New(0, 0.5),
+                Position = UDim2New(0, 0, 0.5, 0),
+                BackgroundTransparency = 1,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                BorderSizePixel = 0,
+                AutomaticSize = Enum.AutomaticSize.X,
+                TextSize = 9,
+                BackgroundColor3 = FromRGB(255, 255, 255)
+            })  Items["Text"]:AddToTheme({TextColor3 = "Text"})
+
+            Items["Text"]:TextBorder()
+        end
+
+        return BlankElement, Items
+    end
 
 getgenv().Library = Library
 return Library
